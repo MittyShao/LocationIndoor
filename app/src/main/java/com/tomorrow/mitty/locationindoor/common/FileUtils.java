@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileUtils {
-    private static String path = Environment.getExternalStorageDirectory().toString() + "/Pictures/OpenCVsift/";
-
+    public static String path = Environment.getExternalStorageDirectory().toString() + "/Pictures/OpenCVsift/";
+    public static String resultpath = Environment.getExternalStorageDirectory().toString() + "/Pictures/result/";
     public FileUtils() {
         File file = new File(path);
         /**

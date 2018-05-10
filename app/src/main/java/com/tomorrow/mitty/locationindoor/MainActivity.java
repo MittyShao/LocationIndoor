@@ -45,6 +45,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
+
 public class MainActivity extends AppCompatActivity implements BDLocationListener {
 
     private TextView mTextMessage;
@@ -65,6 +66,11 @@ public class MainActivity extends AppCompatActivity implements BDLocationListene
     private LinearLayout buttonPreview;
     private SettingsFragment mySettingsFragment;
     private Boolean setNotShow=true;
+
+    static {
+        System.loadLibrary("opencv_java3");
+    }
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {

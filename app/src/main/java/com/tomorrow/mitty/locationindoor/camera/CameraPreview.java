@@ -129,6 +129,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 processFrameThreadPool.post(data,camera);
                 break;
         }
+
     }
 
     private class CameraHandlerThread extends HandlerThread {

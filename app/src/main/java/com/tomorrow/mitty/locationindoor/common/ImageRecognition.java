@@ -37,7 +37,8 @@ public class ImageRecognition {
 
     private Mat cameraOriginalImage;//从相机中提取的图片帧
 
-    public List<Rect> getInfoRect(Mat originalImage){
+    public List<Rect> getInfoRect(){
+        Mat originalImage=Imgcodecs.imread(FileUtils.resultpath+"原图.jpg",Imgcodecs.CV_LOAD_IMAGE_COLOR);
         this.cameraOriginalImage=originalImage;
 //        String sdDir = getSDCardBaseDir();
 //        String filePath = sdDir + "/Pictures/OpenCV/" + "nake" + ".png";
@@ -85,6 +86,7 @@ public class ImageRecognition {
         //提取模板图的特征点
         MatOfKeyPoint templateDescriptors = new MatOfKeyPoint();
         DescriptorExtractor descriptorExtractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
+
         System.out.println("提取模板图的特征点");
         descriptorExtractor.compute(templateImage, templateKeyPoints, templateDescriptors);
 
@@ -92,7 +94,7 @@ public class ImageRecognition {
 //        Imgcodecs.imread(fileName, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE)//new example
 //        Mat outputImage = new Mat(templateImage.rows(), templateImage.cols(), Highgui.CV_LOAD_IMAGE_COLOR);//old
         Mat outputImage = new Mat(templateImage.rows(), templateImage.cols(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
-        System.out.println("在图片上显示提取的特征点");
+        System.out.println("在模板图片上显示提取的特征点");
         Features2d.drawKeypoints(templateImage, templateKeyPoints, outputImage, new Scalar(255, 0, 0), 0);
 
         //获取原图的特征点
@@ -102,6 +104,11 @@ public class ImageRecognition {
         System.out.println("提取原图的特征点");
         descriptorExtractor.compute(originalImage, originalKeyPoints, originalDescriptors);
 
+        //显示原图的特征点图片
+        Mat outputImage1 = new Mat(originalImage.rows(), originalImage.cols(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        System.out.println("在原图片上显示提取的特征点");
+        Features2d.drawKeypoints(originalImage, originalKeyPoints, outputImage1, new Scalar(255, 0, 0), 0);
+
         List<MatOfDMatch> matches = new LinkedList();
         DescriptorMatcher descriptorMatcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
         System.out.println("寻找最佳匹配");
@@ -109,6 +116,10 @@ public class ImageRecognition {
          * knnMatch方法的作用就是在给定特征描述集合中寻找最佳匹配
          * 使用KNN-matching算法，令K=2，则每个match得到两个最接近的descriptor，然后计算最接近距离和次接近距离之间的比值，当比值大于既定值时，才作为最终match。
          */
+        //changed:add{
+//        templateDescriptors.convertTo(templateDescriptors,CvType.CV_32F);
+//        originalDescriptors.convertTo(originalDescriptors,CvType.CV_32F);
+        //changed:add}
         descriptorMatcher.knnMatch(templateDescriptors, originalDescriptors, matches, 2);
 
         System.out.println("计算匹配结果");
@@ -148,8 +159,8 @@ public class ImageRecognition {
             /**
              * 透视变换(Perspective Transformation)是将图片投影到一个新的视平面(Viewing Plane)，也称作投影映射(Projective Mapping)。
              */
-            Mat templateCorners = new Mat(4, 1, CvType.CV_32FC2);
-            Mat templateTransformResult = new Mat(4, 1, CvType.CV_32FC2);
+            Mat templateCorners = new Mat(4, 1, CvType.CV_32FC2);//changed:CV_32FC2
+            Mat templateTransformResult = new Mat(4, 1, CvType.CV_32FC2);//changed:CV_32FC2
             templateCorners.put(0, 0, new double[]{0, 0});
             templateCorners.put(1, 0, new double[]{templateImage.cols(), 0});
             templateCorners.put(2, 0, new double[]{templateImage.cols(), templateImage.rows()});
@@ -169,7 +180,7 @@ public class ImageRecognition {
             int colStart = (int) pointD[0];
             int colEnd = (int) pointB[0];
             Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
-            Imgcodecs.imwrite("/Users/niwei/Desktop/opencv/原图中的匹配图.jpg", subMat);
+            Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);
 
             //获取识别出的logo的位置信息
             locationInfomation=new Rect(new Point(pointA),new Point(pointD));
@@ -184,13 +195,14 @@ public class ImageRecognition {
             Mat matchOutput = new Mat(originalImage.rows() * 2, originalImage.cols() * 2, Imgcodecs.CV_LOAD_IMAGE_COLOR);
             Features2d.drawMatches(templateImage, templateKeyPoints, originalImage, originalKeyPoints, goodMatches, matchOutput, new Scalar(0, 255, 0), new Scalar(255, 0, 0), new MatOfByte(), 2);
 
-            Imgcodecs.imwrite("/Users/niwei/Desktop/opencv/特征点匹配过程.jpg", matchOutput);
-            Imgcodecs.imwrite("/Users/niwei/Desktop/opencv/模板图在原图中的位置.jpg", originalImage);
+            Imgcodecs.imwrite(FileUtils.resultpath+"特征点匹配过程.jpg", matchOutput);
+            Imgcodecs.imwrite(FileUtils.resultpath+"模板图在原图中的位置.jpg", originalImage);
         } else {
             System.out.println("模板图不在原图中！");
         }
 
-        Imgcodecs.imwrite("/Users/niwei/Desktop/opencv/模板特征点.jpg", outputImage);
+        Imgcodecs.imwrite(FileUtils.resultpath+"模板特征点.jpg", outputImage);
+        Imgcodecs.imwrite(FileUtils.resultpath+"原图特征点.jpg", outputImage1);
 
         return locationInfomation;
     }
@@ -198,8 +210,8 @@ public class ImageRecognition {
 //    public static void main(String[] args) {
 //        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //
-//        String templateFilePath = "/Users/niwei/Desktop/opencv/模板.jpeg";
-//        String originalFilePath = "/Users/niwei/Desktop/opencv/原图.jpeg";
+//        String templateFilePath = "/Users/apple/Desktop/openCV/模板.jpeg";
+//        String originalFilePath = "/Users/apple/Desktop/openCV/原图.jpeg";
 //        //读取图片文件
 //        Mat templateImage = Imgcodecs.imread(templateFilePath, Imgcodecs.CV_LOAD_IMAGE_COLOR);
 //        Mat originalImage = Imgcodecs.imread(originalFilePath, Imgcodecs.CV_LOAD_IMAGE_COLOR);

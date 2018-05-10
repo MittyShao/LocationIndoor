@@ -5,6 +5,7 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.util.Log;
 
+import com.tomorrow.mitty.locationindoor.common.FileUtils;
 import com.tomorrow.mitty.locationindoor.common.ImageRecognition;
 
 import org.opencv.android.Utils;
@@ -12,6 +13,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.concurrent.BlockingQueue;
@@ -50,10 +52,12 @@ public class ProcessWithThreadPool {
     }
 
     private void processFrame(byte[] frameData, Camera camera) {
-//        Log.i(TAG, "test");
-        Camera.Size previewSize = camera.getParameters().getPreviewSize();
 
+//        Log.i(TAG, byte.class.getName());
+        Camera.Size previewSize = camera.getParameters().getPreviewSize();
+//        Log.i("previewSize", previewSize.toString());
         Bitmap bitmap = ByteToBitmap(frameData, previewSize);
+//        Log.i("bitmap", bitmap.toString());
         //Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);//将data byte型数组转换成bitmap文件
 
         final Matrix matrix = new Matrix();//转换成矩阵旋转90度
@@ -64,14 +68,13 @@ public class ProcessWithThreadPool {
 //        }
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);//旋转图片
 
-
-        Mat grayscaleImage = new Mat(previewSize.height, previewSize.width, CvType.CV_8UC4);
+        Mat grayscaleImage = new Mat(previewSize.height, previewSize.width, CvType.CV_8S);//changed：CV_8UC4
         int absoluteLogoSize = (int) (previewSize.height * 0.2);//预览的小窗口大小
 
         if (bitmap != null) {
             Mat inputFrame = new Mat();
             Utils.bitmapToMat(bitmap, inputFrame);
-
+            Imgcodecs.imwrite(FileUtils.resultpath+"原图.jpg", inputFrame);//added
             if (!bitmap.isRecycled()) {
                 bitmap.recycle();
             }
@@ -89,7 +92,7 @@ public class ProcessWithThreadPool {
 
 
             // 检测目标
-            Rect[] object = (Rect[]) new ImageRecognition().getInfoRect(inputFrame).toArray();
+            Rect[] object = (Rect[]) new ImageRecognition().getInfoRect().toArray();
             Log.e(TAG, object.length + "Rect[] object.length");
 
             for (Rect rect : object) {

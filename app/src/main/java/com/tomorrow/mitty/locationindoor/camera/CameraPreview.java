@@ -130,6 +130,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 break;
         }
 
+
     }
 
     private class CameraHandlerThread extends HandlerThread {

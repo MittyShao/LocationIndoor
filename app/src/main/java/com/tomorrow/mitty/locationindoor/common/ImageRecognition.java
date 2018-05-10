@@ -37,8 +37,8 @@ public class ImageRecognition {
 
     private Mat cameraOriginalImage;//从相机中提取的图片帧
 
-    public List<Rect> getInfoRect(){
-        Mat originalImage=Imgcodecs.imread(FileUtils.resultpath+"原图.jpg",Imgcodecs.CV_LOAD_IMAGE_COLOR);
+    public List<Rect> getInfoRect(Mat originalImage){
+        originalImage=Imgcodecs.imread(FileUtils.resultpath+"原图.jpg",Imgcodecs.CV_LOAD_IMAGE_COLOR);
         this.cameraOriginalImage=originalImage;
 //        String sdDir = getSDCardBaseDir();
 //        String filePath = sdDir + "/Pictures/OpenCV/" + "nake" + ".png";
@@ -179,8 +179,12 @@ public class ImageRecognition {
             int rowEnd = (int) pointC[1];
             int colStart = (int) pointD[0];
             int colEnd = (int) pointB[0];
-            Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
-            Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);
+            if((colEnd-colStart)==0 || (rowEnd-rowStart)==0){
+//                System.out.printf("%d  %d  %d  %d ",rowStart,rowEnd,colStart,colEnd);
+                Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
+                Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);
+            }
+
 
             //获取识别出的logo的位置信息
             locationInfomation=new Rect(new Point(pointA),new Point(pointD));

@@ -5,7 +5,6 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.util.Log;
 
-import com.tomorrow.mitty.locationindoor.common.FileUtils;
 import com.tomorrow.mitty.locationindoor.common.ImageRecognition;
 
 import org.opencv.android.Utils;
@@ -13,7 +12,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.concurrent.BlockingQueue;
@@ -68,13 +66,13 @@ public class ProcessWithThreadPool {
 //        }
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);//旋转图片
 
-        Mat grayscaleImage = new Mat(previewSize.height, previewSize.width, CvType.CV_8S);//changed：CV_8UC4
+        Mat grayscaleImage = new Mat(previewSize.height, previewSize.width, CvType.CV_64F);//changed：CV_8UC4
         int absoluteLogoSize = (int) (previewSize.height * 0.2);//预览的小窗口大小
 
         if (bitmap != null) {
             Mat inputFrame = new Mat();
             Utils.bitmapToMat(bitmap, inputFrame);
-            Imgcodecs.imwrite(FileUtils.resultpath+"原图.jpg", inputFrame);//added
+//            Imgcodecs.imwrite(FileUtils.resultpath+"原图.jpg", inputFrame);//added
             if (!bitmap.isRecycled()) {
                 bitmap.recycle();
             }
@@ -92,7 +90,7 @@ public class ProcessWithThreadPool {
 
 
             // 检测目标
-            Rect[] object = (Rect[]) new ImageRecognition().getInfoRect().toArray();
+            Rect[] object = (Rect[]) new ImageRecognition().getInfoRect(inputFrame).toArray();
             Log.e(TAG, object.length + "Rect[] object.length");
 
             for (Rect rect : object) {

@@ -1,11 +1,14 @@
 package com.tomorrow.mitty.locationindoor;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +35,7 @@ import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.tomorrow.mitty.locationindoor.camera.CameraPreview;
+import com.tomorrow.mitty.locationindoor.camera.CustomImageButton;
 import com.tomorrow.mitty.locationindoor.camera.MyOrientationListener;
 import com.tomorrow.mitty.locationindoor.camera.MyOrientationListener.OnOrientationListener;
 import com.tomorrow.mitty.locationindoor.camera.SettingsFragment;
@@ -40,6 +44,7 @@ import com.tomorrow.mitty.locationindoor.common.FileUtils;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -66,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements BDLocationListene
     private LinearLayout buttonPreview;
     private SettingsFragment mySettingsFragment;
     private Boolean setNotShow=true;
+
+    private CustomImageButton imageButton;
 
     static {
         System.loadLibrary("opencv_java3");
@@ -127,6 +134,19 @@ public class MainActivity extends AppCompatActivity implements BDLocationListene
 //        downLoad("https://www.duurzaam-ondernemen.nl/wordpress/wp-content/uploads/2013/07/Nike_logo.jpg","nike.jpg");
         //-----------------------------------------------------------------------------------------------
         setSystemUIVisible(false);
+//-------------------------------------------------------
+        String path = "aaa.jpg"; //图片存放的路径
+        //InputStream is = getClassLoader().getResourceAsStream(path); //得到图片流
+        InputStream is = null;
+        try {
+            is = this.getResources().getAssets().open(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Bitmap bm = BitmapFactory.decodeStream(is);
+        imageButton = (CustomImageButton) findViewById(R.id.iv_face);
+        imageButton.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        imageButton.setBitmap(bm);
     }
 
     @Override
@@ -364,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements BDLocationListene
         buttonStartPreview = (Button) findViewById(R.id.button_start_preview);
         buttonPreview.setVisibility(View.VISIBLE);
         preview.setVisibility(View.VISIBLE);
-        mPreview = new CameraPreview(this);
+        mPreview = new CameraPreview(this,imageButton);
 //        mPreview.show();
         preview.addView(mPreview);
 

@@ -138,7 +138,7 @@ public class ImageRecognition {
 
         matchesPointCount = goodMatchesList.size();
         //当匹配后的特征点大于等于 4 个，则认为模板图在原图中，该值可以自行调整
-        if (matchesPointCount >= 4) {
+        if (matchesPointCount >= 20) {//changed:4
             System.out.println("模板图在原图匹配成功！");
 
             List<KeyPoint> templateKeyPointList = templateKeyPoints.toList();
@@ -179,7 +179,8 @@ public class ImageRecognition {
             int rowEnd = (int) pointC[1];
             int colStart = (int) pointD[0];
             int colEnd = (int) pointB[0];
-            if((colEnd-colStart)==0 || (rowEnd-rowStart)==0){
+            if(rowStart>=0 && colStart>=0 &&
+                    (colEnd-colStart)>=0 && (rowEnd-rowStart)>=0){
 //                System.out.printf("%d  %d  %d  %d ",rowStart,rowEnd,colStart,colEnd);
                 Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
                 Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);

@@ -27,10 +27,10 @@ public class myUtils {
         Bitmap bm = null;
         ByteArrayOutputStream baos = null;
         try {
-            YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);
+            YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);//changed NV21
             baos = new ByteArrayOutputStream();
             //这里 80 是图片质量，取值范围 0-100，100为品质最高
-            yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
+            yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 100, baos);
             byte[] jdata = baos.toByteArray();
             bm = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);//将data byte型数组转换成bitmap文件
 

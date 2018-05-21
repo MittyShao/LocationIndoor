@@ -53,6 +53,10 @@ public class CustomImageButton extends LinearLayout {
 
     }
 
+    public void  reSetBitmap(Bitmap bm){
+        _imageView.setImageBitmap(bm);
+    }
+
 
     public Bitmap resizeBitmap(Bitmap bm, int ivbWidth, int ivbHeight) {
         Bitmap resizeBmp = null;

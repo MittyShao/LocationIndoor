@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements BDLocationListene
     private SettingsFragment mySettingsFragment;
     private Boolean setNotShow=true;
 
-    private CustomImageButton imageButton;
+    public static CustomImageButton imageButton;
 
     static {
         System.loadLibrary("opencv_java3");

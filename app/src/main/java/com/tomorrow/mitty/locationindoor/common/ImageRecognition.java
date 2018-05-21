@@ -1,5 +1,12 @@
 package com.tomorrow.mitty.locationindoor.common;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
+
+import com.tomorrow.mitty.locationindoor.MainActivity;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -11,7 +18,6 @@ import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
@@ -20,7 +26,10 @@ import org.opencv.features2d.Features2d;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,24 +46,49 @@ public class ImageRecognition {
 
     private Mat cameraOriginalImage;//从相机中提取的图片帧
 
-    public List<Rect> getInfoRect(Mat originalImage){
+    private int maxSize;
+
+    private String findedTemplate;
+
+    public void getInfoRect(Mat originalImage){
         originalImage=Imgcodecs.imread(FileUtils.resultpath+"原图.jpg",Imgcodecs.CV_LOAD_IMAGE_COLOR);
         this.cameraOriginalImage=originalImage;
 //        String sdDir = getSDCardBaseDir();
 //        String filePath = sdDir + "/Pictures/OpenCV/" + "nake" + ".png";
         //模板// 图片列表
+        maxSize=0;
         List<String> imagePathList = FileUtils.getImagePathFromSD();
-        List<Rect> locInfos = new ArrayList<Rect>();
+//        List<Rect> locInfos = new ArrayList<Rect>();
         for (String templateFilePath:imagePathList){
             Mat templateImage = Imgcodecs.imread(templateFilePath, Imgcodecs.CV_LOAD_IMAGE_COLOR);
             ImageRecognition imageRecognition = new ImageRecognition();
-            Rect locInfo=imageRecognition.matchImage(templateImage, originalImage);
-            if(locInfo!=null){
-                locInfos.add(locInfo);
-            }
-            System.out.println("匹配的像素点总数：" + imageRecognition.getMatchesPointCount());
+            imageRecognition.matchImage(templateImage, originalImage);
+
+//            Rect locInfo=imageRecognition.matchImage(templateImage, originalImage);
+//            if(locInfo!=null){
+//                locInfos.add(locInfo);
+//            }
+//            System.out.println("匹配的像素点总数：" + imageRecognition.getMatchesPointCount());
         }
-        return locInfos;
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                File file = new File(FileUtils.resultpath+"原图中的匹配图.jpg");
+                InputStream inputStream=null;
+                try {
+                    inputStream  = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Bitmap bm = BitmapFactory.decodeStream(inputStream);
+                if(bm!=null) {
+                    MainActivity.imageButton.reSetBitmap(bm);
+                }
+            }
+        });
+
     }
 
 
@@ -75,8 +109,8 @@ public class ImageRecognition {
         this.matchesPointCount = matchesPointCount;
     }
 
-    public Rect matchImage(Mat templateImage, Mat originalImage) {
-        Rect locationInfomation=null;
+    public void matchImage(Mat templateImage, Mat originalImage) {
+//        Rect locationInfomation=null;
         MatOfKeyPoint templateKeyPoints = new MatOfKeyPoint();
         //指定特征点算法SURF
 //        OpenCV 中针对特征点匹配问题已经提供了很多算法，包括 FAST 、SIFT 、SURF 、ORB 等，这里不赘述这些算法之间的区别，直接以 SURF 为例，看下 OpenCV 里面如何应用的
@@ -179,16 +213,20 @@ public class ImageRecognition {
             int rowEnd = (int) pointC[1];
             int colStart = (int) pointD[0];
             int colEnd = (int) pointB[0];
-            if(rowStart>=0 && colStart>=0 &&
-                    (colEnd-colStart)>=0 && (rowEnd-rowStart)>=0){
-//                System.out.printf("%d  %d  %d  %d ",rowStart,rowEnd,colStart,colEnd);
-                Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
-                Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);
+            int hei=colEnd-colStart;
+            int wei=rowEnd-rowStart;
+            if(rowStart>0 && colStart>0 && hei>0 && wei>0){
+                int nowSize=hei*wei;
+                if(nowSize>maxSize){
+                    Mat subMat = originalImage.submat(rowStart, rowEnd, colStart, colEnd);
+                    Imgcodecs.imwrite(FileUtils.resultpath+"原图中的匹配图.jpg", subMat);
+                    maxSize=nowSize;
+                }
             }
 
 
             //获取识别出的logo的位置信息
-            locationInfomation=new Rect(new Point(pointA),new Point(pointD));
+//            locationInfomation=new Rect(new Point(pointA),new Point(pointD));
             //将匹配的图像用用四条线框出来
             Imgproc.line(originalImage, new Point(pointA), new Point(pointB), new Scalar(0, 255, 0), 4);//上 A->B
             Imgproc.line(originalImage, new Point(pointB), new Point(pointC), new Scalar(0, 255, 0), 4);//右 B->C
@@ -209,7 +247,7 @@ public class ImageRecognition {
         Imgcodecs.imwrite(FileUtils.resultpath+"模板特征点.jpg", outputImage);
         Imgcodecs.imwrite(FileUtils.resultpath+"原图特征点.jpg", outputImage1);
 
-        return locationInfomation;
+//        return locationInfomation;
     }
 
 //    public static void main(String[] args) {
